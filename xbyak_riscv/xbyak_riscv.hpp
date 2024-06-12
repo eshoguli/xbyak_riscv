@@ -10,6 +10,10 @@
 
 // Copyright (C), 2023, KNS Group LLC (YADRO)
 
+#ifndef XBYAK_RISCV_V
+#define XBYAK_RISCV_V 1
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
@@ -213,7 +217,6 @@ static const size_t ALIGN_PAGE_SIZE = 4096;
 
 inline constexpr uint32_t mask(size_t n)
 {
-	XBYAK_RISCV_ASSERT(n <= 32);
 	return n == 32 ? 0xffffffff : (1u << n) - 1;
 }
 // is x <= mask(n) ?
@@ -381,9 +384,7 @@ protected:
 public:
 	constexpr IReg(uint32_t idx = 0, Kind kind = GPR)
 		: idx_(idx), kind_(kind)
-	{
-		XBYAK_RISCV_ASSERT(local::inBit(idx, 5));
-	}
+	{}
 	constexpr int getIdx() const { return idx_; }
 	const char *toString() const
 	{
@@ -465,7 +466,7 @@ static constexpr FReg fs0(8), fs1(9), fa0(10), fa1(11), fa2(12), fa3(13), fa4(14
 static constexpr FReg fs2(18), fs3(19), fs4(20), fs5(21), fs6(22), fs7(23), fs8(24), fs9(25), fs10(26), fs11(27);
 static constexpr FReg ft8(28), ft9(29), ft10(30), ft11(31);
 
-#if defined(XBYAK_RISCV_V) && XBYAK_RISCV_V == 1
+#if defined(XBYAK_RISCV_V)
 // Vector Register
 struct VReg : public local::IReg {
 	explicit constexpr VReg(int idx = 0) : local::IReg(idx, IReg::Kind::VECTOR) { }
@@ -1331,7 +1332,7 @@ public:
 #ifdef _WIN32
 		FlushInstructionCache(GetCurrentProcess(), begin, n);
 #elif defined(__APPLE__)
-		sys_icache_invalidate(begin, n);
+		//sys_icache_invalidate(begin, n);
 #else
 		__builtin___clear_cache((char *)p, (char *)p + n);
 #endif
@@ -1350,7 +1351,7 @@ public:
 	void readyRE() { return ready(PROTECT_RE); }
 
 #include "xbyak_riscv_mnemonic.hpp"
-#if defined(XBYAK_RISCV_V) && XBYAK_RISCV_V == 1
+#if defined(XBYAK_RISCV_V)
 #include "xbyak_riscv_v.hpp"
 #endif
 };
